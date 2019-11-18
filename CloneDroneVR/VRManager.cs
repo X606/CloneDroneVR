@@ -13,6 +13,14 @@ namespace CloneDroneVR
     {
         public VRPlayer Player;
 
+        public void InitPlayer()
+        {
+            Player = new GameObject("Player").AddComponent<VRPlayer>();
+            Player.transform.parent = transform;
+            Player.transform.localPosition = Vector3.zero;
+            Player.transform.localRotation = Quaternion.identity;
+        }
+
         public void InitEyeTextures(int resolutionWidth, int resolutionHeight)
         {
             RightEyeRenderTexture = new RenderTexture(resolutionWidth, resolutionHeight, 24, RenderTextureFormat.ARGB32);

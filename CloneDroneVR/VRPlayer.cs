@@ -103,6 +103,7 @@ namespace CloneDroneVR
             SteamVR_Utils.RigidTransform leftEye = new SteamVR_Utils.RigidTransform(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
             LeftCamera.transform.localPosition = leftEye.pos;
             LeftCamera.transform.localRotation = leftEye.rot;
+            LeftCamera.targetTexture = VRManager.Instance.LeftEyeRenderTexture;
 
             RightCamera = new GameObject("RightCamera").AddComponent<Camera>();
             RightCamera.transform.parent = transform;
@@ -110,6 +111,7 @@ namespace CloneDroneVR
             SteamVR_Utils.RigidTransform rightEye = new SteamVR_Utils.RigidTransform(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
             RightCamera.transform.localPosition = leftEye.pos;
             RightCamera.transform.localRotation = leftEye.rot;
+            LeftCamera.targetTexture = VRManager.Instance.RightEyeRenderTexture;
 
         }
 
@@ -118,12 +120,41 @@ namespace CloneDroneVR
             RightCamera.Render();
             LeftCamera.Render();
 
-            OpenVR.Compositor.Submit(EVREye.Eye_Left,)
+            var hmdTextureBounds = new VRTextureBounds_t();
+            hmdTextureBounds.uMin = 0.0f;
+            hmdTextureBounds.uMax = 1.0f;
+            hmdTextureBounds.vMin = 1.0f; // flip the vertical coordinate for some reason (no idea why but they did it in kerbal vr so im doing it too)
+            hmdTextureBounds.vMax = 0.0f;
+
+            EVRCompositorError error = OpenVR.Compositor.Submit(EVREye.Eye_Left, ref VRManager.Instance.LeftEyeTexture, ref hmdTextureBounds, EVRSubmitFlags.Submit_Default);
+            if(error != EVRCompositorError.None)
+                throw new Exception("OpenVR Sumbit error on left eye: " + error.ToString());
+
+            error = OpenVR.Compositor.Submit(EVREye.Eye_Right, ref VRManager.Instance.RightEyeTexture, ref hmdTextureBounds, EVRSubmitFlags.Submit_Default);
+            if(error != EVRCompositorError.None)
+                throw new Exception("OpenVR Sumbit error on right eye: " + error.ToString());
         }
     }
 
     public class VRController : VRNode
     {
+        void Awake()
+        {
+            GameObject preview = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            preview.transform.parent = transform;
+            preview.transform.localPosition = Vector3.zero;
+            preview.transform.localRotation = Quaternion.identity;
+            preview.transform.localScale = new Vector3(0.05f, 0.05f, 0.1f);
 
+            Renderer renderer = preview.GetComponent<Renderer>();
+            if (NodeType == VRNodeType.RightHand)
+            {
+                renderer.material.color = Color.blue;
+            } else
+            {
+                renderer.material.color = Color.red;
+            }
+
+        }
     }
 }

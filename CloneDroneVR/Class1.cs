@@ -31,7 +31,7 @@ namespace CloneDroneVR
                 new GameObject("VRManager").AddComponent<VRManager>();
             
             VRStartupManager.Instance.InitOpenVR();
-            
+            VRManager.Instance.InitPlayer();
         }
         
     }
