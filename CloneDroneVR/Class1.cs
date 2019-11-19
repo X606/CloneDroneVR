@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using ModLibrary;
 using UnityEngine;
+using Valve.VR;
+using CloneDroneVR.GameModeManagers;
 
 namespace CloneDroneVR
 {
@@ -29,10 +31,24 @@ namespace CloneDroneVR
 
             if(VRManager.Instance == null)
                 new GameObject("VRManager").AddComponent<VRManager>();
-            
+
+            VRManager.Instance.AddGameModeManager(new GameModeNone());
+
+            StartVR();
+        }
+
+        public void StartVR()
+        {
             VRStartupManager.Instance.InitOpenVR();
             VRManager.Instance.InitPlayer();
         }
-        
+
+        public override void CreateSettingsWindow(ModOptionsWindowBuilder builder)
+        {
+            var vrSettingsPage = builder.AddPage("VRSettings");
+            vrSettingsPage.AddButton("Start vr", StartVR);
+        }
+        public override bool ImplementsSettingsWindow() => true;
+
     }
 }
