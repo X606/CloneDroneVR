@@ -18,36 +18,53 @@ namespace CloneDroneVR.GameModeManagers
             GameMode = GameMode.None;
         }
 
-        Canvas _canvas;
+        Canvas[] _canvases;
         GameObject _ray;
         bool _hasClickedCurrentSelectable = false;
         EventSystem _eventSystem;
 
         public override void OnGameModeStarted()
         {
-            VRManager.Instance.Player.transform.position = new Vector3(0f, 10f, 0f);
+            VRManager.Instance.Player.transform.position = new Vector3(0f, 40f, 0f);
 
-            _canvas = getTopParent(GameUIRoot.Instance.TitleScreenUI.transform).GetComponent<Canvas>();
-
-            _canvas.renderMode = RenderMode.WorldSpace;
-
-            _canvas.transform.position = new Vector3(0, 10, 5);
-            _canvas.transform.localScale = Vector3.one * 0.01f;
-
+            RefreshCanvases();
+            
             _eventSystem = GameObject.FindObjectOfType<EventSystem>();
 
-            Component[] components = _canvas.GetComponentsInChildren<Component>(true);
-            foreach(Component component in components)
-            {
-                if(!(component is IPointerClickHandler) && !(component is ISelectHandler))
-                    continue;
+            
+        }
 
-                BoxCollider collider = component.gameObject.AddComponent<BoxCollider>();
-                float width = component.GetComponent<RectTransform>().sizeDelta.x;
-                float height = component.GetComponent<RectTransform>().sizeDelta.y;
-                collider.size = new Vector3(width, height, 1f);
+        void RefreshCanvases()
+        {
+            RectTransform mainCanvas = getTopParent(GameUIRoot.Instance.TitleScreenUI.transform).GetComponent<RectTransform>();
+
+            _canvases = GameObject.FindObjectsOfType<Canvas>();
+            for(int i = 0; i < _canvases.Length; i++)
+            {
+                _canvases[i].renderMode = RenderMode.WorldSpace;
+
+                float offset = i / 25f;
+
+                _canvases[i].transform.position = new Vector3(0f, 40f, 5f + offset);
+                _canvases[i].transform.localScale = Vector3.one * 0.01f;
+                _canvases[i].GetComponent<RectTransform>().sizeDelta = mainCanvas.sizeDelta;
+                Component[] components = _canvases[i].GetComponentsInChildren<Component>(true);
+                foreach(Component component in components)
+                {
+                    if(!(component is IPointerClickHandler) && !(component is ISelectHandler))
+                        continue;
+
+                    if(component.GetComponent<BoxCollider>() != null) // we have already created the collider
+                        continue;
+
+                    BoxCollider collider = component.gameObject.AddComponent<BoxCollider>();
+                    float width = component.GetComponent<RectTransform>().sizeDelta.x;
+                    float height = component.GetComponent<RectTransform>().sizeDelta.y;
+                    collider.size = new Vector3(width, height, 1f);
+                }
             }
         }
+
         public override void OnPreVRRender()
         {
             if (_ray == null)
@@ -81,6 +98,7 @@ namespace CloneDroneVR.GameModeManagers
                         if(componentWithClickHandaler != null)
                         {
                             ((IPointerClickHandler)componentWithClickHandaler).OnPointerClick(new PointerEventData(_eventSystem));
+                            DelegateScheduler.Instance.Schedule(RefreshCanvases, 0f);
                             _hasClickedCurrentSelectable = true;
                         }
                     }

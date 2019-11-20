@@ -32,13 +32,13 @@ namespace CloneDroneVR
         public void OnLateUpdate()
         {
             dispatchOpenVREvents();
-            
-            OpenVR.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0f, VRManager.DevicePoses);
-            SteamVR_Events.NewPoses.Send(VRManager.DevicePoses);
-            
+
             EVRCompositorError compositorError = OpenVR.Compositor.WaitGetPoses(VRManager.RenderPoses, VRManager.GamePoses);
             if(compositorError != EVRCompositorError.None)
                 throw new Exception("OpenVr error: " +compositorError.ToString());
+
+            OpenVR.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, Utils.CalculatePredictedSecondsToPhotons(), VRManager.DevicePoses);
+            SteamVR_Events.NewPoses.Send(VRManager.DevicePoses);
             
             for(int i = 0; i < VRManager.DevicePoses.Length; i++)
             {
@@ -85,8 +85,6 @@ namespace CloneDroneVR
             Head.Render();
             
 
-            // [insert dark magic here]
-            OpenVR.Compositor.PostPresentHandoff();
             
 
         }
@@ -196,25 +194,23 @@ namespace CloneDroneVR
 
         public void Render()
         {
-            Console.WriteLine("starting render");
             if(VRManager.Instance.CurrentModeManager != null)
                 VRManager.Instance.CurrentModeManager.OnPreVRRender();
 
-            //RightCamera.targetTexture = VRManager.Instance.RightEyeRenderTexture;
-            //LeftCamera.targetTexture = VRManager.Instance.LeftEyeRenderTexture;
-
-            Console.WriteLine("starting render.2");
-
-            RightCamera.Render();
-            Console.WriteLine("starting render.3");
+            
+            LeftCamera.targetTexture = VRManager.Instance.LeftEyeRenderTexture;
             LeftCamera.Render();
-
-            Console.WriteLine("render0.5");
-
-            VRManager.Instance.RightEyeTexture.handle = VRManager.Instance.RightEyeRenderTexture.GetNativeTexturePtr();
             VRManager.Instance.LeftEyeTexture.handle = VRManager.Instance.LeftEyeRenderTexture.GetNativeTexturePtr();
 
-            Console.WriteLine("render1");
+            RightCamera.targetTexture = VRManager.Instance.RightEyeRenderTexture;
+            RightCamera.Render();
+            VRManager.Instance.RightEyeTexture.handle = VRManager.Instance.RightEyeRenderTexture.GetNativeTexturePtr();
+            
+            
+            
+            
+
+            
 
             EVRCompositorError error = OpenVR.Compositor.Submit(EVREye.Eye_Left, ref VRManager.Instance.LeftEyeTexture, ref _bounds, EVRSubmitFlags.Submit_Default);
             if(error != EVRCompositorError.None)
@@ -223,13 +219,13 @@ namespace CloneDroneVR
             error = OpenVR.Compositor.Submit(EVREye.Eye_Right, ref VRManager.Instance.RightEyeTexture, ref _bounds, EVRSubmitFlags.Submit_Default);
             if(error != EVRCompositorError.None)
                 throw new Exception("OpenVR Sumbit error on right eye: " + error.ToString());
-
-            Console.WriteLine("render2");
+            
+            // [insert dark magic here]
+            OpenVR.Compositor.PostPresentHandoff();
 
             if (VRManager.Instance.CurrentModeManager != null)
                 VRManager.Instance.CurrentModeManager.OnPostVRRender();
-
-            Console.WriteLine("end of render");
+            
         }
 
         Matrix4x4 matrix4x4_OpenVr2UnityFormat(ref HmdMatrix44_t mat44_openvr)
