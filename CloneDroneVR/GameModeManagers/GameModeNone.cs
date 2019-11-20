@@ -21,9 +21,12 @@ namespace CloneDroneVR.GameModeManagers
         Canvas _canvas;
         GameObject _ray;
         bool _hasClickedCurrentSelectable = false;
+        EventSystem _eventSystem;
 
         public override void OnGameModeStarted()
         {
+            VRManager.Instance.Player.transform.position = new Vector3(0f, 10f, 0f);
+
             _canvas = getTopParent(GameUIRoot.Instance.TitleScreenUI.transform).GetComponent<Canvas>();
 
             _canvas.renderMode = RenderMode.WorldSpace;
@@ -31,12 +34,17 @@ namespace CloneDroneVR.GameModeManagers
             _canvas.transform.position = new Vector3(0, 10, 5);
             _canvas.transform.localScale = Vector3.one * 0.01f;
 
-            Button[] buttons = _canvas.GetComponentsInChildren<Button>(true);
-            foreach(Button button in buttons)
+            _eventSystem = GameObject.FindObjectOfType<EventSystem>();
+
+            Component[] components = _canvas.GetComponentsInChildren<Component>(true);
+            foreach(Component component in components)
             {
-                BoxCollider collider = button.gameObject.AddComponent<BoxCollider>();
-                float width = button.GetComponent<RectTransform>().sizeDelta.x;
-                float height = button.GetComponent<RectTransform>().sizeDelta.y;
+                if(!(component is IPointerClickHandler) && !(component is ISelectHandler))
+                    continue;
+
+                BoxCollider collider = component.gameObject.AddComponent<BoxCollider>();
+                float width = component.GetComponent<RectTransform>().sizeDelta.x;
+                float height = component.GetComponent<RectTransform>().sizeDelta.y;
                 collider.size = new Vector3(width, height, 1f);
             }
         }
@@ -61,16 +69,18 @@ namespace CloneDroneVR.GameModeManagers
                 _ray.transform.localPosition = offset/2f + controller.transform.position;
                 _ray.transform.forward = offset.normalized;
 
-                VRControllerState_t controllerState = controller.ControllerState;
+                Component componentWithSelectHandaler = getInterfaceComponent<ISelectHandler>(hit.collider.gameObject);
+                if(componentWithSelectHandaler != null)
+                    ((ISelectHandler)componentWithSelectHandaler).OnSelect(new BaseEventData(_eventSystem));
 
                 if(controller.ControllerState.rAxis1.x > 0.5f)
                 {
                     if(!_hasClickedCurrentSelectable)
                     {
-                        Button button = hit.collider.GetComponent<Button>();
-                        if(button != null)
+                        Component componentWithClickHandaler = getInterfaceComponent<IPointerClickHandler>(hit.collider.gameObject);
+                        if(componentWithClickHandaler != null)
                         {
-                            button.onClick.Invoke();
+                            ((IPointerClickHandler)componentWithClickHandaler).OnPointerClick(new PointerEventData(_eventSystem));
                             _hasClickedCurrentSelectable = true;
                         }
                     }
@@ -89,6 +99,10 @@ namespace CloneDroneVR.GameModeManagers
 
         }
 
+        public override void OnGameModeQuit()
+        {
+            GameObject.Destroy(_ray);
+        }
 
         Transform getTopParent(Transform obj)
         {
@@ -97,6 +111,20 @@ namespace CloneDroneVR.GameModeManagers
                 obj = obj.parent;
             }
             return obj;
+        }
+        Component getInterfaceComponent<_interface>(GameObject _object)
+        {
+            Component[] components = _object.GetComponents<Component>();
+
+            foreach(Component component in components)
+            {
+                if (component is _interface)
+                {
+                    return component;
+                }
+            }
+
+            return null;
         }
 
     }

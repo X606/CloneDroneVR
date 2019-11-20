@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloneDroneVR
 {
+
     public abstract class VRGameModeManager
     {
         public GameMode GameMode;

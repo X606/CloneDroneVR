@@ -33,6 +33,7 @@ namespace CloneDroneVR
                 new GameObject("VRManager").AddComponent<VRManager>();
 
             VRManager.Instance.AddGameModeManager(new GameModeNone());
+            VRManager.Instance.AddGameModeManager(new GameModeEndless());
 
             StartVR();
         }
@@ -42,13 +43,6 @@ namespace CloneDroneVR
             VRStartupManager.Instance.InitOpenVR();
             VRManager.Instance.InitPlayer();
         }
-
-        public override void CreateSettingsWindow(ModOptionsWindowBuilder builder)
-        {
-            var vrSettingsPage = builder.AddPage("VRSettings");
-            vrSettingsPage.AddButton("Start vr", StartVR);
-        }
-        public override bool ImplementsSettingsWindow() => true;
 
     }
 }

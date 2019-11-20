@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Valve.VR;
+using UnityEngine.EventSystems;
 
 namespace CloneDroneVR
 {
@@ -132,7 +133,6 @@ namespace CloneDroneVR
         {
             return new Vector3(hmdVector3_T.v0, hmdVector3_T.v1, hmdVector3_T.v2);
         }
-
     }
 
     public enum VRNodeType
