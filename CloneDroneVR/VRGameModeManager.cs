@@ -33,5 +33,9 @@ namespace CloneDroneVR
         {
         }
 
+        public virtual void OnVRPlayerDeath(PhysicalVRPlayer player)
+        {
+        }
+
     }
 }

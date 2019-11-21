@@ -254,6 +254,8 @@ namespace CloneDroneVR
 
     public class VRController : VRNode
     {
+        Renderer _renderer;
+
         void Start()
         {
             GameObject preview = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -262,13 +264,13 @@ namespace CloneDroneVR
             preview.transform.localRotation = Quaternion.identity;
             preview.transform.localScale = new Vector3(0.05f, 0.05f, 0.1f);
 
-            Renderer renderer = preview.GetComponent<Renderer>();
+            _renderer = preview.GetComponent<Renderer>();
             if (NodeType == VRNodeType.RightHand)
             {
-                renderer.material.color = Color.blue;
+                _renderer.material.color = Color.blue;
             } else
             {
-                renderer.material.color = Color.red;
+                _renderer.material.color = Color.red;
             }
 
         }
@@ -288,6 +290,29 @@ namespace CloneDroneVR
                 OpenVR.System.GetControllerState(DeviceIndex, ref controllerState, controllerSize);
 
                 return controllerState;
+            }
+        }
+
+        public bool RendererActive
+        {
+            get
+            {
+                return _renderer.enabled;
+            }
+            set
+            {
+                _renderer.enabled = value;
+            }
+        }
+        public bool ColliderActive
+        {
+            get
+            {
+                return _renderer.gameObject.GetComponent<Renderer>().enabled;
+            }
+            set
+            {
+                _renderer.gameObject.GetComponent<Renderer>().enabled = value;
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Collections;
 using UnityEngine;
 using ModLibrary;
 using ModLibrary.YieldInstructions;
+using RootMotion.FinalIK;
 
 namespace CloneDroneVR.GameModeManagers
 {
@@ -16,27 +17,51 @@ namespace CloneDroneVR.GameModeManagers
         {
             GameMode = GameMode.Endless;
         }
-        bool _hasPlayerSpawned = false;
+        PhysicalVRPlayer _player;
 
         public override void OnGameModeStarted()
         {
-            WaitForThenCall.Schedule(delegate
-            {
-                _hasPlayerSpawned = true;
-                FirstPersonMover player = CharacterTracker.Instance.GetPlayer();
-                
+            VRManager.Instance.Player.LeftController.ColliderActive = false;
+            VRManager.Instance.Player.RightController.ColliderActive = false;
 
-
-            }, delegate { return CharacterTracker.Instance.GetPlayer() != null; });
+            FindPlayer();
         }
 
         public override void OnPreVRRender()
         {
-            if(!_hasPlayerSpawned)
+            if(_player == null)
                 return;
 
-            FirstPersonMover player = CharacterTracker.Instance.GetPlayer();
-            VRManager.Instance.Player.transform.position = player.transform.position;
+            _player.OnPreVRRender();
+        }
+
+        public override void OnVRPlayerDeath(PhysicalVRPlayer player)
+        {
+            if(player != _player)
+                throw new Exception("The passed player is not the same as the saved player");
+
+            _player = null;
+
+            FindPlayer();
+        }
+
+        void FindPlayer()
+        {
+            if(_player != null)
+                return;
+
+            WaitForThenCall.Schedule(delegate
+            {
+                FirstPersonMover player = CharacterTracker.Instance.GetPlayer();
+
+                if(player.gameObject.GetComponent<PhysicalVRPlayer>() != null)
+                    throw new Exception("There was already a PhysicalVrPlayer on the player");
+
+                _player = player.gameObject.AddComponent<PhysicalVRPlayer>();
+
+
+
+            }, delegate { return CharacterTracker.Instance.GetPlayer() != null; });
         }
 
     }
