@@ -23,6 +23,20 @@ namespace CloneDroneVR.GameModeManagers
         bool _hasClickedCurrentSelectable = false;
         EventSystem _eventSystem;
 
+        List<Component> _selectedObjects = new List<Component>();
+        void DeselectEverything()
+        {
+            foreach(Component @object in _selectedObjects)
+            {
+                IDeselectHandler deselect = @object as IDeselectHandler;
+                if (deselect != null)
+                {
+                    deselect.OnDeselect(new BaseEventData(_eventSystem));
+                }
+            }
+            _selectedObjects.Clear();
+        }
+
         public override void OnGameModeStarted()
         {
 
@@ -94,7 +108,15 @@ namespace CloneDroneVR.GameModeManagers
 
                 Component componentWithSelectHandaler = getInterfaceComponent<ISelectHandler>(hit.collider.gameObject);
                 if(componentWithSelectHandaler != null)
-                    ((ISelectHandler)componentWithSelectHandaler).OnSelect(new BaseEventData(_eventSystem));
+                {
+                    if(!_selectedObjects.Contains(componentWithSelectHandaler))
+                    {
+                        DeselectEverything();
+                        ((ISelectHandler)componentWithSelectHandaler).OnSelect(new BaseEventData(_eventSystem));
+                        _selectedObjects.Add(componentWithSelectHandaler);
+                    }
+                }
+                    
 
                 if(controller.ControllerState.rAxis1.x > 0.5f)
                 {

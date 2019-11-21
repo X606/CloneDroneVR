@@ -15,6 +15,21 @@ namespace CloneDroneVR
         public VRController LeftController;
         public VRController RightController;
 
+        public float Scale
+        {
+            get
+            {
+                if(transform.localScale.x != transform.localScale.y || transform.localScale.y != transform.localScale.z)
+                    throw new Exception("The player had a diffrent scale on at least one of its cordiantes " + transform.localScale);
+
+                return transform.localScale.x;
+            }
+            set
+            {
+                transform.localScale = Vector3.one * value;
+            }
+        }
+
         void Awake()
         {
             Head = new GameObject("Head").AddComponent<VRCamera>();
@@ -89,7 +104,6 @@ namespace CloneDroneVR
 
         }
 
-        
         void dispatchOpenVREvents()
         {
             // copied from SteamVR_Render

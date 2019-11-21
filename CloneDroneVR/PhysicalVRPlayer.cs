@@ -57,10 +57,18 @@ namespace CloneDroneVR
             _leftArmIK.solver.target = VRManager.Instance.Player.LeftController.transform;
             _rightArmIK.solver.target = VRManager.Instance.Player.RightController.transform;
 
+            VRManager.Instance.Player.Scale = transform.localScale.y;
         }
         public void OnPreVRRender()
         {
             VRManager.Instance.Player.transform.position = transform.position;
+
+            Vector3 playerHeadEularAngles = VRManager.Instance.Player.Head.transform.eulerAngles;
+
+            Vector3 myEularAngles = transform.eulerAngles;
+            myEularAngles.y = playerHeadEularAngles.y;
+            transform.eulerAngles = myEularAngles;
+
         }
 
         void OnPlayerDeath()
