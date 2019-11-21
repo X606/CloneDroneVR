@@ -25,6 +25,12 @@ namespace CloneDroneVR.GameModeManagers
 
         public override void OnGameModeStarted()
         {
+
+            VRManager.Instance.Player.LeftController.ColliderActive = true;
+            VRManager.Instance.Player.RightController.ColliderActive = true;
+            VRManager.Instance.Player.LeftController.RendererActive = true;
+            VRManager.Instance.Player.RightController.RendererActive = true;
+
             VRManager.Instance.Player.transform.position = new Vector3(0f, 40f, 0f);
 
             RefreshCanvases();

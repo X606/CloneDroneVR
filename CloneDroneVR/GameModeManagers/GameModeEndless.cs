@@ -23,6 +23,8 @@ namespace CloneDroneVR.GameModeManagers
         {
             VRManager.Instance.Player.LeftController.ColliderActive = false;
             VRManager.Instance.Player.RightController.ColliderActive = false;
+            VRManager.Instance.Player.LeftController.RendererActive = true;
+            VRManager.Instance.Player.RightController.RendererActive = true;
 
             FindPlayer();
         }
