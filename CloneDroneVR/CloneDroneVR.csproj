@@ -296,7 +296,9 @@
     <Compile Include="SteamVR\Scripts\SteamVR_TrackingReferenceManager.cs" />
     <Compile Include="SteamVR\Scripts\SteamVR_Utils.cs" />
     <Compile Include="SteamVR\WindowsHelper\SteamVR_Windows_Editor_Helper.cs" />
+    <Compile Include="TransportUtils.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="VrControllerStateExtensionMethods.cs" />
     <Compile Include="VRGameModeManager.cs" />
     <Compile Include="VRManager.cs" />
     <Compile Include="VRPlayer.cs" />

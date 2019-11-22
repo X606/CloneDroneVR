@@ -34,7 +34,7 @@ namespace CloneDroneVR
 
             VRManager.Instance.AddGameModeManager(new GameModeNone());
             VRManager.Instance.AddGameModeManager(new GameModeEndless());
-
+            
             StartVR();
         }
 
@@ -44,5 +44,7 @@ namespace CloneDroneVR
             VRManager.Instance.InitPlayer();
         }
 
+
+        public override bool ShouldCursorBeEnabled() => true;
     }
 }

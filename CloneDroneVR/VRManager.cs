@@ -30,6 +30,8 @@ namespace CloneDroneVR
         public VRGameModeManager CurrentModeManager { get; private set; }
         void Update()
         {
+            PointerRay.Update();
+
             GameMode currentGameMode = GameFlowManager.Instance.GetCurrentGameMode();
             if (currentGameMode != _oldGameMode)
             {

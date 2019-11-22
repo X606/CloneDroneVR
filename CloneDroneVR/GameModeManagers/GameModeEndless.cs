@@ -29,20 +29,28 @@ namespace CloneDroneVR.GameModeManagers
             FindPlayer();
         }
 
-        public override void OnPreVRRender()
-        {
-            if(_player == null)
-                return;
-
-            _player.OnPreVRRender();
-        }
-
         public override void OnVRPlayerDeath(PhysicalVRPlayer player)
         {
             if(player != _player)
                 throw new Exception("The passed player is not the same as the saved player");
 
             _player = null;
+            
+            if (CloneManager.Instance.GetNumClones() == 0) // this is a game over, go to UI
+            {
+                TransportUtils.TransportTo(VRManager.Instance.Player.transform, VRManager.Instance.Player.transform.position, VRManager.Instance.Player.transform.rotation, new Vector3(0f, 40f, 0f), Quaternion.identity, 5f, delegate
+                {
+                    PointerRay.SetEnabled(true);
+                    PointerRay.OnAnyButtonClicked = delegate
+                    {
+                        FindPlayer();
+
+                        PointerRay.SetEnabled(false);
+                        PointerRay.OnAnyButtonClicked = null;
+                    };
+                });
+                return;
+            }
 
             FindPlayer();
         }
@@ -52,8 +60,13 @@ namespace CloneDroneVR.GameModeManagers
             if(_player != null)
                 return;
 
+            float lastTime = Time.time + 5f;
+
             WaitForThenCall.Schedule(delegate
             {
+                if(Time.time >= lastTime)
+                    return;
+
                 FirstPersonMover player = CharacterTracker.Instance.GetPlayer();
 
                 if(player.gameObject.GetComponent<PhysicalVRPlayer>() != null)
@@ -63,7 +76,14 @@ namespace CloneDroneVR.GameModeManagers
 
 
 
-            }, delegate { return CharacterTracker.Instance.GetPlayer() != null; });
+            }, delegate {
+
+                if(Time.time >= lastTime)
+                    return true;
+
+                FirstPersonMover player = CharacterTracker.Instance.GetPlayer();
+                return player != null && player.IsAttachedAndAlive();
+            });
         }
 
     }
