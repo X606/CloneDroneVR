@@ -6,11 +6,65 @@ using System.Threading.Tasks;
 using Valve.VR;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityStandardAssets.ImageEffects;
+using ModLibrary;
 
 namespace CloneDroneVR
 {
     public static class Utils
     {
+        public static void ApplyPostProcessFiltersToCamera(Camera camera)
+        {
+            Camera mainCamera = Camera.main;
+
+            Bloom bloom = camera.gameObject.AddComponent<Bloom>();
+            bloom.tweakMode = Bloom.TweakMode.Basic;
+            bloom.screenBlendMode = Bloom.BloomScreenBlendMode.Add;
+            bloom.hdr = Bloom.HDRBloomMode.Auto;
+            bloom.sepBlurSpread = 2.5f;
+            bloom.quality = Bloom.BloomQuality.High;
+            bloom.bloomIntensity = 0.5f;
+            bloom.bloomThreshold = 0.9f;
+            bloom.bloomThresholdColor = new Color(1f, 1f, 1f, 1f);
+            bloom.bloomBlurIterations = 2;
+            bloom.hollywoodFlareBlurIterations = 2;
+            bloom.flareRotation = 0f;
+            bloom.lensflareMode = Bloom.LensFlareStyle.Anamorphic;
+            bloom.hollyStretchWidth = 2.5f;
+            bloom.lensflareIntensity = 0f;
+            bloom.lensflareThreshold = 0.3f;
+            bloom.lensFlareSaturation = 0.75f;
+            bloom.flareColorA = new Color(0.4f, 0.4f, 0.8f, 0.75f);
+            bloom.flareColorB = new Color(0.4f, 0.8f, 0.8f, 0.75f);
+            bloom.flareColorC = new Color(0.8f, 0.4f, 0.8f, 0.75f);
+            bloom.flareColorD = new Color(0.8f, 0.4f, 0f, 0.75f);
+            bloom.lensFlareVignetteMask = mainCamera.GetComponent<Bloom>().lensFlareVignetteMask;
+            bloom.lensFlareShader = Shader.Find("Hidden/LensFlareCreate");
+            bloom.screenBlendShader = Shader.Find("Hidden/BlendForBloom");
+            bloom.blurAndFlaresShader = Shader.Find("Hidden/BlurAndFlares");
+            bloom.brightPassFilterShader = Shader.Find("Hidden/BrightPassFilter2");
+
+            AmplifyColorEffect mainCameraColorEffect = mainCamera.GetComponent<AmplifyColorEffect>();
+            AmplifyColorEffect colorEffect = camera.gameObject.AddComponent<AmplifyColorEffect>();
+            colorEffect.Tonemapper = AmplifyColor.Tonemapping.Disabled;
+            colorEffect.Exposure = 1f;
+            colorEffect.LinearWhitePoint = 11.2f;
+            colorEffect.ApplyDithering = false;
+            colorEffect.QualityLevel = AmplifyColor.Quality.Standard;
+            colorEffect.BlendAmount = 0.33f;
+            colorEffect.LutTexture = mainCameraColorEffect.LutTexture;
+            colorEffect.LutBlendTexture = mainCameraColorEffect.LutBlendTexture;
+            colorEffect.MaskTexture = mainCameraColorEffect.MaskTexture;
+            colorEffect.UseDepthMask = false;
+            colorEffect.DepthMaskCurve = mainCameraColorEffect.DepthMaskCurve;
+            colorEffect.UseVolumes = false;
+            colorEffect.ExitVolumeBlendTime = 1f;
+            colorEffect.TriggerVolumeProxy = mainCameraColorEffect.TriggerVolumeProxy;
+            colorEffect.VolumeCollisionMask = mainCameraColorEffect.VolumeCollisionMask;
+            colorEffect.EffectFlags = mainCameraColorEffect.EffectFlags;
+
+        }
+
         public static float CalculatePredictedSecondsToPhotons()
         {
             float secondsSinceLastVsync = 0f;
